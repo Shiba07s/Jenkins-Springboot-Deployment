@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  product-service:
+    image: product-service:latest
+    container_name: product-service
+    ports:
+      - "2020:2020"
