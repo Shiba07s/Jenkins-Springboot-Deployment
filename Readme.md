@@ -430,3 +430,34 @@ This project documentation is provided as-is for educational and reference purpo
 ---
 
 **Last Updated**: December 2025
+
+# PERMANENT FIXES (Highly Recommended)
+🔥 1️⃣ Add Swap Memory (VERY IMPORTANT)
+
+This alone fixes 90% SSH issues.
+
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+
+Make it permanent:
+
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+
+Check:
+
+free -h
+
+🔥 2️⃣ Reduce memory usage
+
+If you’re running Docker / Jenkins / Java (you are 😉):
+
+docker system prune -af
+
+
+Limit Java memory:
+
+-Xms256m -Xmx512m
