@@ -213,47 +213,45 @@ Configure the following settings:
 2. In the pipeline configuration, use the following example:
 ```groovy
 pipeline {
-    agent {
-        label 'product'
+    agent { label "Test"}
+    environment {
+        MAVEN_OPTS = "-Xms128m -Xmx256m"
     }
-    
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Checking out code...'
-                // git branch: 'main', url: 'https://github.com/your-repo.git'
+        stage("code") {
+            steps  {
+                git url: "https://github.com/Shiba07s/Jenkins-Springboot-Deployment.git",
+                branch : "master"
             }
         }
-        
-        stage('Build') {
+        stage("mvn build") {
             steps {
-                echo 'Building application...'
-                // sh 'npm install'
-                // sh 'npm run build'
+                echo 'Building Spring Boot application...'
+                sh 'mvn clean package -DskipTests'
+                echo "maven build completed"
             }
         }
-        
-        stage('Test') {
+        stage("docker build" ) {
             steps {
-                echo 'Running tests...'
-                // sh 'npm test'
+                sh "docker build -t shiba07s/product-service:latest ."
+                echo "docker build completed"
             }
         }
-        
-        stage('Deploy') {
+           stage("push to docker hub") {
             steps {
-                echo 'Deploying application...'
-                // sh './deploy.sh'
+                  withCredentials([usernamePassword(credentialsId: "dockerHubCred",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
+                  sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                  sh "docker image tag product-service:latest ${env.dockerHubUser}/product-service:latest"
+                  sh "docker push ${env.dockerHubUser}/product-service:latest"
+                  echo "docker push completed"
+                  }
             }
         }
-    }
-    
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+        stage("deploy") {
+            steps {
+                sh "docker-compose down -v && docker-compose up -d "
+                echo "deploy completed"
+            }
         }
     }
 }
